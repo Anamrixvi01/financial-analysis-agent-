@@ -21,6 +21,17 @@ class AnalyzeRequest(BaseModel):
 def health():
     return {"status": "ok"}
 
+@app.get("/debug-env")
+def debug_env():
+    endpoint = os.getenv("AZURE_SEARCH_ENDPOINT")
+    key = os.getenv("AZURE_SEARCH_KEY")
+    return {
+        "AZURE_SEARCH_ENDPOINT_raw": repr(endpoint),
+        "AZURE_SEARCH_ENDPOINT_length": len(endpoint) if endpoint else 0,
+        "AZURE_SEARCH_KEY_present": bool(key),
+        "AZURE_SEARCH_KEY_length": len(key) if key else 0,
+    }
+
 
 @app.post("/analyze")
 def analyze(request: AnalyzeRequest):
