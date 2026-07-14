@@ -9,7 +9,22 @@ that agents can call by name.
 """
 
 import yfinance as yf
+import requests
 from langchain_core.tools import tool
+
+
+def get_yf_session():
+    """
+    Returns a requests session with a realistic browser User-Agent.
+    Yahoo Finance sometimes blocks requests from cloud/datacenter IPs
+    (like Render, AWS) that don't look like a real browser.
+    """
+    session = requests.Session()
+    session.headers.update({
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
+                      "(KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36"
+    })
+    return session
 
 
 @tool
@@ -19,7 +34,7 @@ def get_stock_price(ticker: str) -> dict:
     Example: get_stock_price("AAPL")
     """
     try:
-        stock = yf.Ticker(ticker)
+        stock = yf.Ticker(ticker, session=get_yf_session())
         info = stock.info
 
         return {
@@ -43,7 +58,7 @@ def get_financial_ratios(ticker: str) -> dict:
     Example: get_financial_ratios("AAPL")
     """
     try:
-        stock = yf.Ticker(ticker)
+        stock = yf.Ticker(ticker, session=get_yf_session())
         info = stock.info
 
         return {
@@ -69,7 +84,7 @@ def get_recent_news(ticker: str) -> list:
     Example: get_recent_news("AAPL")
     """
     try:
-        stock = yf.Ticker(ticker)
+        stock = yf.Ticker(ticker, session=get_yf_session())
         news = stock.news[:5]  # latest 5 articles
 
         return [
@@ -92,7 +107,7 @@ def get_price_history(ticker: str) -> dict:
     Example: get_price_history("AAPL")
     """
     try:
-        stock = yf.Ticker(ticker)
+        stock = yf.Ticker(ticker, session=get_yf_session())
         hist = stock.history(period="6mo")
 
         if hist.empty:

@@ -45,6 +45,17 @@ def analyzer_agent(state: dict) -> dict:
 
     print(f"\n[Analyzer] Analyzing {company_name} ({ticker})...")
 
+
+    # ── Guard: check if Data Fetcher actually got real data ──────────────────
+    if "error" in raw_data.get("price", {}) or "error" in raw_data.get("ratios", {}):
+        print(f"[Analyzer] ⚠️ Data Fetcher failed to get real data for {ticker}")
+        return {
+            "analysis": {"error": "Unable to fetch live market data for this ticker. Please try again shortly."},
+            "next_agent": "FINISH",
+            "messages": [f"Analyzer: Aborted — no data available for {ticker}"],
+        }
+    
+    
     # ── Step 0: Check long-term memory for past reports ──────────────────────
     past_reports = retrieve_past_reports(ticker, top=1)
     if past_reports:
