@@ -48,8 +48,8 @@ def analyzer_agent(state: dict) -> dict:
 
 
     # ── Guard: check if Data Fetcher actually got real data ──────────────────
-    if "error" in raw_data.get("price", {}) or "error" in raw_data.get("ratios", {}):
-        print(f"[Analyzer] ⚠️ Data Fetcher failed to get real data for {ticker}")
+  if "error" in raw_data.get("price", {}):
+        print(f"[Analyzer] ⚠️ Could not fetch price data for {ticker}")
         return {
             "analysis": {"error": "Unable to fetch live market data for this ticker. Please try again shortly."},
             "next_agent": "FINISH",

@@ -10,6 +10,7 @@ Same function names + return shapes as yahoo_finance.py — drop-in replacement.
 
 import os
 import requests
+import time
 from langchain_core.tools import tool
 from dotenv import load_dotenv
 
@@ -19,12 +20,19 @@ BASE_URL = "https://www.alphavantage.co/query"
 API_KEY = os.getenv("ALPHA_VANTAGE_API_KEY")
 
 
-def _get(params: dict) -> dict:
-    """Internal helper: makes the actual API call."""
-    params["apikey"] = API_KEY
-    response = requests.get(BASE_URL, params=params, timeout=15)
-    return response.json()
 
+
+def _get(params: dict, retries: int = 2) -> dict:
+    """Internal helper: makes the API call, retrying if rate-limited."""
+    params["apikey"] = API_KEY
+    for attempt in range(retries + 1):
+        response = requests.get(BASE_URL, params=params, timeout=15)
+        data = response.json()
+        if "Information" not in data and "Note" not in data:
+            return data
+        if attempt < retries:
+            time.sleep(15)
+    return data
 
 @tool
 def get_stock_price(ticker: str) -> dict:
