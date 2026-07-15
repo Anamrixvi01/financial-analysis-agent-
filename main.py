@@ -21,7 +21,14 @@ class AnalyzeRequest(BaseModel):
 def health():
     return {"status": "ok"}
 
-
+@app.get("/debug-av-key")
+def debug_av_key():
+    key = os.getenv("ALPHA_VANTAGE_API_KEY")
+    return {
+        "key_present": bool(key),
+        "key_length": len(key) if key else 0,
+        "key_last_4": key[-4:] if key else None,
+    }
 
 @app.post("/analyze")
 def analyze(request: AnalyzeRequest):
