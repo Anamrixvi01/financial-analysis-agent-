@@ -1,7 +1,7 @@
 """
 agents/data_fetcher.py — Data Fetcher Agent
 
-Job: Fetch ALL financial data for the given ticker from Yahoo Finance.
+Job: Fetch ALL financial data for the given ticker from Alpha Vantage.
      Write everything to state["raw_data"].
      Then hand off to Analyzer.
 
@@ -10,9 +10,10 @@ This agent does NOT use Azure OpenAI — it just calls tools.
 
 import sys
 import os
+import time
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from tools.yahoo_finance import (
+from tools.alpha_vantage import (
     get_stock_price,
     get_financial_ratios,
     get_recent_news,
@@ -28,11 +29,18 @@ def data_fetcher_agent(state: dict) -> dict:
     ticker = state["ticker"]
     print(f"\n[Data Fetcher] Fetching data for {ticker}...")
 
-    # Call all 4 Yahoo Finance tools
-    price_data     = get_stock_price.invoke({"ticker": ticker})
-    ratio_data     = get_financial_ratios.invoke({"ticker": ticker})
-    news_data      = get_recent_news.invoke({"ticker": ticker})
-    history_data   = get_price_history.invoke({"ticker": ticker})
+    # Call all 4 Alpha Vantage tools, spaced 1 second apart to respect
+    # the free tier's "1 request per second" rate limit
+    price_data = get_stock_price.invoke({"ticker": ticker})
+    time.sleep(1)
+
+    ratio_data = get_financial_ratios.invoke({"ticker": ticker})
+    time.sleep(1)
+
+    news_data = get_recent_news.invoke({"ticker": ticker})
+    time.sleep(1)
+
+    history_data = get_price_history.invoke({"ticker": ticker})
 
     # Package everything into raw_data
     raw_data = {

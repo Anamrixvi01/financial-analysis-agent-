@@ -5,10 +5,11 @@ Job: Read report_draft from state
      → check for risks, red flags, missing disclaimers
      → add professional disclaimers
      → write final polished report to state["final_report"]
+     → save the finalized report to long-term memory
 
 This is the LAST agent — it's the quality gate before the report reaches the user.
 """
-from memory import save_report
+
 import os
 import sys
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -16,6 +17,7 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from dotenv import load_dotenv
 from langchain_openai import AzureChatOpenAI
 from langchain_core.messages import HumanMessage, SystemMessage
+from memory import save_report
 
 load_dotenv()
 
@@ -30,6 +32,13 @@ def get_llm():
     )
 
 
+def _safe_num(value, default=0):
+    """Safely convert a value to a number, handling 'N/A' strings gracefully."""
+    if isinstance(value, (int, float)):
+        return value
+    return default
+
+
 def risk_review_agent(state: dict) -> dict:
     """
     Reviews the report draft for risks and adds disclaimers.
@@ -39,20 +48,19 @@ def risk_review_agent(state: dict) -> dict:
     ticker       = state["ticker"]
     company_name = state["company_name"]
     ratios       = state["raw_data"]["ratios"]
-    ratios       = state["raw_data"]["ratios"]
     analysis     = state["analysis"]
+
+    print(f"\n[Risk Review] Reviewing report for {company_name} ({ticker})...")
 
     # ── Determine the official recommendation to save to memory ──────────────
     official_recommendation = analysis["price_target"]["recommendation"]
 
-    print(f"\n[Risk Review] Reviewing report for {company_name} ({ticker})...")
-
     # ── Step 1: Identify risk flags automatically ─────────────────────────────
     risk_flags = []
 
-    pe_ratio      = ratios.get("pe_ratio", 0) or 0
-    debt_equity   = ratios.get("debt_to_equity", 0) or 0
-    profit_margin = ratios.get("profit_margins", 0) or 0
+    pe_ratio      = _safe_num(ratios.get("pe_ratio"))
+    debt_equity   = _safe_num(ratios.get("debt_to_equity"))
+    profit_margin = _safe_num(ratios.get("profit_margins"))
 
     if pe_ratio > 40:
         risk_flags.append(f"HIGH VALUATION: PE ratio of {pe_ratio:.1f} is above 40 — stock may be overvalued")
@@ -91,11 +99,12 @@ def risk_review_agent(state: dict) -> dict:
     final_report = final.content
     print(f"[Risk Review] ✅ Done! Risk flags: {len(risk_flags)}. Final report ready.")
 
+    # ── Save the finalized report to long-term memory ────────────────────────
     save_report(
         ticker=ticker,
         report_text=final_report,
         recommendation=official_recommendation,
-        )
+    )
     print(f"[Risk Review] 💾 Report saved to long-term memory (recommendation: {official_recommendation})")
 
     return {

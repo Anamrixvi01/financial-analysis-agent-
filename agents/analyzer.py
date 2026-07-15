@@ -15,6 +15,7 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from dotenv import load_dotenv
 from langchain_openai import AzureChatOpenAI
 from langchain_core.messages import HumanMessage, SystemMessage
+
 from tools.calculator import (
     calculate_growth_rate,
     calculate_price_target,
@@ -55,7 +56,7 @@ def analyzer_agent(state: dict) -> dict:
             "messages": [f"Analyzer: Aborted — no data available for {ticker}"],
         }
     
-    
+
     # ── Step 0: Check long-term memory for past reports ──────────────────────
     past_reports = retrieve_past_reports(ticker, top=1)
     if past_reports:

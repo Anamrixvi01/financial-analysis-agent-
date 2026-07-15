@@ -30,6 +30,13 @@ def get_llm():
     )
 
 
+def _fmt_money(value):
+    """Safely format a value as currency, handling 'N/A' strings gracefully."""
+    if isinstance(value, (int, float)):
+        return f"${value:,.2f}"
+    return "N/A"
+
+
 def writer_agent(state: dict) -> dict:
     """
     Writes a full professional investment analysis report.
@@ -51,6 +58,12 @@ def writer_agent(state: dict) -> dict:
     price_target = analysis["price_target"]
     valuation    = analysis["valuation"]
     interpret    = analysis["interpretation"]
+
+    # 52-week high/low and market cap now come from ratios (Alpha Vantage's
+    # OVERVIEW endpoint), not price (GLOBAL_QUOTE) — see tools/alpha_vantage.py
+    week_high  = _fmt_money(ratios.get("52_week_high"))
+    week_low   = _fmt_money(ratios.get("52_week_low"))
+    market_cap = _fmt_money(ratios.get("market_cap"))
 
     # Format news headlines
     news_text = "\n".join([
@@ -78,9 +91,9 @@ def writer_agent(state: dict) -> dict:
             f"- Current Price: ${price.get('current_price', 'N/A')}\n"
             f"- Previous Close: ${price.get('previous_close', 'N/A')}\n"
             f"- Daily Change: {daily_change['growth_rate_percent']}% ({daily_change['direction']})\n"
-            f"- 52-Week High: ${price.get('52_week_high', 'N/A')}\n"
-            f"- 52-Week Low: ${price.get('52_week_low', 'N/A')}\n"
-            f"- Market Cap: ${price.get('market_cap', 'N/A'):,}\n\n"
+            f"- 52-Week High: {week_high}\n"
+            f"- 52-Week Low: {week_low}\n"
+            f"- Market Cap: {market_cap}\n\n"
             f"FINANCIAL RATIOS:\n"
             f"- PE Ratio: {ratios.get('pe_ratio', 'N/A')}\n"
             f"- EPS: ${ratios.get('eps', 'N/A')}\n"
