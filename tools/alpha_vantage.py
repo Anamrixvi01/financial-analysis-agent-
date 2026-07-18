@@ -28,11 +28,12 @@ def _get(params: dict, retries: int = 2) -> dict:
     for attempt in range(retries + 1):
         response = requests.get(BASE_URL, params=params, timeout=15)
         data = response.json()
+        print(f"[DEBUG-AV] {params.get('function')} (attempt {attempt+1}): {data}")
         if "Information" not in data and "Note" not in data:
             return data
         if attempt < retries:
             time.sleep(15)
-    return data
+    return datas
 
 @tool
 def get_stock_price(ticker: str) -> dict:
