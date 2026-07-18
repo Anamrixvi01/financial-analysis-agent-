@@ -33,7 +33,7 @@ def _get(params: dict, retries: int = 2) -> dict:
             return data
         if attempt < retries:
             time.sleep(15)
-    return datas
+    return data
 
 @tool
 def get_stock_price(ticker: str) -> dict:
