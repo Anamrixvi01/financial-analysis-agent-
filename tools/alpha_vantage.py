@@ -6,11 +6,13 @@ Replaces yahoo_finance.py, which gets blocked on cloud hosts (Render, AWS)
 since yfinance scrapes Yahoo's site rather than using an official API.
 
 Same function names + return shapes as yahoo_finance.py — drop-in replacement.
+
+NOTE: Alpha Vantage free tier = 25 requests/day per key. Each /analyze call
+uses 4 requests (price, ratios, news, history). Test sparingly.
 """
 
 import os
 import requests
-import time
 from langchain_core.tools import tool
 from dotenv import load_dotenv
 
@@ -20,20 +22,12 @@ BASE_URL = "https://www.alphavantage.co/query"
 API_KEY = os.getenv("ALPHA_VANTAGE_API_KEY")
 
 
-
-
-def _get(params: dict, retries: int = 2) -> dict:
-    """Internal helper: makes the API call, retrying if rate-limited."""
+def _get(params: dict) -> dict:
+    """Internal helper: makes the actual API call."""
     params["apikey"] = API_KEY
-    for attempt in range(retries + 1):
-        response = requests.get(BASE_URL, params=params, timeout=15)
-        data = response.json()
-        print(f"[DEBUG-AV] {params.get('function')} (attempt {attempt+1}): {data}")
-        if "Information" not in data and "Note" not in data:
-            return data
-        if attempt < retries:
-            time.sleep(15)
-    return data
+    response = requests.get(BASE_URL, params=params, timeout=15)
+    return response.json()
+
 
 @tool
 def get_stock_price(ticker: str) -> dict:
