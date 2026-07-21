@@ -1,0 +1,56 @@
+{
+  "AAPL": {
+    "price": {
+      "ticker": "AAPL",
+      "company_name": "AAPL",
+      "current_price": 326.59,
+      "previous_close": 333.74,
+      "52_week_high": "N/A",
+      "52_week_low": "N/A",
+      "market_cap": "N/A",
+      "currency": "USD"
+    },
+    "ratios": {
+      "error": "No overview data returned",
+      "ticker": "AAPL"
+    },
+    "news": [
+      {
+        "title": "No recent news found",
+        "publisher": "N/A",
+        "summary": "N/A"
+      }
+    ],
+    "history": {
+      "error": "No price history found",
+      "ticker": "AAPL"
+    }
+  },
+  "MSFT": {
+    "price": {
+      "ticker": "MSFT",
+      "company_name": "MSFT",
+      "current_price": 402.29,
+      "previous_close": 393.82,
+      "52_week_high": "N/A",
+      "52_week_low": "N/A",
+      "market_cap": "N/A",
+      "currency": "USD"
+    },
+    "ratios": {
+      "error": "No overview data returned",
+      "ticker": "MSFT"
+    },
+    "news": [
+      {
+        "title": "No recent news found",
+        "publisher": "N/A",
+        "summary": "N/A"
+      }
+    ],
+    "history": {
+      "error": "No price history found",
+      "ticker": "MSFT"
+    }
+  }
+}
